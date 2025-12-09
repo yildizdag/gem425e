@@ -1,7 +1,8 @@
-!!----------------------------
-!! APDL IMPLEMENTATION OF
-!! UNIFORMLY DISTRIBUTED LOADS
-!!----------------------------
+!!--------------------------------------
+!! GEM 425E APDL EXAMPLE
+!! BEAM PROBLEM
+!! SHEAR FORCE - BENDING MOMENT DIAGRAMS
+!!--------------------------------------
 /PREP7
 L=1
 B=0.04
@@ -14,7 +15,7 @@ q=10000 !-Distributed load
 !!------------------------------
 !! MATERIAL PROPERTIES - BEAM188
 !!------------------------------
-ET,1,BEAM188,,,2  
+ET,1,BEAM188  
 MPTEMP,,,,,,,,  
 MPTEMP,1,0  
 MPDATA,EX,1,,YM  
