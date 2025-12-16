@@ -1,0 +1,125 @@
+!!--------------------------------------
+!! GEM 425E APDL EXAMPLE
+!! BEAM PROBLEM
+!! SHEAR FORCE - BENDING MOMENT DIAGRAMS
+!!--------------------------------------
+/PREP7
+L=1
+B=0.06
+H=0.1
+YM=20E9
+NU=0.3
+NE=15 !-Total Number of Elements
+q=4000 !-Distributed load
+!!----------------
+!! ELEMENT TYPES
+!! AND PROPERTIES
+!!----------------
+ET,1,BEAM188  
+MPTEMP,,,,,,,,  
+MPTEMP,1,0  
+MPDATA,EX,1,,YM  
+MPDATA,PRXY,1,,NU
+!!
+ET,2,COMBIN14,,,0
+ET,3,COMBIN14,,,1
+R,1,1E15
+R,2,1E15
+!!-------------
+!! BEAM SECTION
+!!-------------
+SECTYPE,1,BEAM,RECT,,0   
+SECOFFSET,CENT 
+SECDATA,B,H,0,0,0,0,0,0,0,0,0,0
+!!-------------
+!! MESH - NODES
+!!-------------
+NCOUNT = 0
+LE = 3*L/15
+*DO,I,1,NE+1
+NCOUNT = NCOUNT + 1
+N,NCOUNT,LE*(I-1),0,0
+*ENDDO
+!!----------------
+!! MESH - ELEMENTS
+!!----------------
+*DO,I,1,NE
+E,I,I+1
+*ENDDO
+!!------------------
+!! DISTRIBUTED LOAD
+!!------------------
+!!
+*DO,I,1,NE
+!!
+*GET,CE,ELEM,I,CENT,X
+*GET,N1,ELEM,I,NODE,1  
+*GET,N2,ELEM,I,NODE,2 
+*GET,N1X,NODE,N1,LOC,X
+*GET,N2X,NODE,N2,LOC,X
+!!
+*IF,CE,LT,L,THEN
+q1 = 0
+q2 = 0
+*ELSEIF,CE,LT,2*L
+q1 = q*(N1X/L-1)
+q2 = q*(N2X/L-1)
+*ELSEIF,CE,LT,3*L
+q1 = q
+q2 = q
+*ENDIF
+!!
+SFBEAM,I,2,PRES,q1,q2,,,,,0 
+!!
+*ENDDO
+!!!!!!!!!!!!
+!!
+N,NCOUNT+1,-1,0,0
+N,NCOUNT+2,0,1,0
+N,NCOUNT+3,0,0,1
+N,NCOUNT+4,-1,0,0
+N,NCOUNT+5,0,1,0
+N,NCOUNT+6,0,0,1
+!!
+NSEL,S,LOC,X,0,0
+NSEL,R,LOC,Y,0,0
+NSEL,R,LOC,Z,0,0
+*GET,NLEFT,NODE,0,NUM,MIN
+ALLSEL,ALL
+!!
+TYPE,2   
+REAL,1
+E,NLEFT,NCOUNT+1
+E,NLEFT,NCOUNT+2
+E,NLEFT,NCOUNT+3
+!!
+TYPE,3   
+REAL,2
+E,NLEFT,NCOUNT+4
+E,NLEFT,NCOUNT+5
+E,NLEFT,NCOUNT+6
+!!
+D,NCOUNT+1,,,,,,ALL,,,,,
+D,NCOUNT+2,,,,,,ALL,,,,,
+D,NCOUNT+3,,,,,,ALL,,,,,
+D,NCOUNT+4,,,,,,ALL,,,,,
+D,NCOUNT+5,,,,,,ALL,,,,,
+D,NCOUNT+6,,,,,,ALL,,,,,
+!!----------
+!! SOLUTION
+!!----------
+/SOLU
+ANTYPE,STATIC
+OUTRES,ALL,ALL
+SOLVE
+FINISH
+!!-----------------
+!! POST-RPOCESSING
+!!-----------------
+/POST1
+SET,FIRST
+! SHEAR FORCE AND BENDING MOMENT
+ETABLE,MZI,SMISC,3
+ETABLE,MZJ,SMISC,16
+ETABLE,VYI,SMISC,6
+ETABLE,VYJ,SMISC,19   
