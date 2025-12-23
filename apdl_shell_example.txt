@@ -1,0 +1,138 @@
+!--------------------------
+! STIFFENED PLATE BENDING
+!--------------------------
+/PREP7
+!--------------------------
+! PARAMETERS
+!--------------------------
+A  = 8.0     
+B  = 6.0
+HW = 0.2
+TP = 0.02
+TW = 0.01
+TF = 0.01
+AF = 0.16
+N = 3
+q = 10000
+!--------------------------
+! MATERIAL PROPERTIES
+!--------------------------
+YM = 200E9
+NU = 0.3
+!--------------------------
+! ELEMENT TYPE
+!--------------------------
+ET,1,SHELL181 
+MPTEMP,,,,,,,,  
+MPTEMP,1,0  
+MPDATA,EX,1,,YM  
+MPDATA,PRXY,1,,NU
+!--------------------------
+! PLATE SECTION
+!--------------------------
+SECT,1,SHELL,,  
+SECDATA,TP,1,0.0,3  
+SECOFFSET,MID   
+SECCONTROL,,,,,,,
+!--------------------------
+! STIFFENER SECTION 1
+!--------------------------
+SECT,2,SHELL,,  
+SECDATA,TW,1,0.0,3  
+SECOFFSET,MID   
+SECCONTROL,,,,,,,
+!--------------------------
+! STIFFENER SECTION 2
+!--------------------------
+SECT,3,SHELL,,  
+SECDATA,TF,1,0.0,3  
+SECOFFSET,MID   
+SECCONTROL,,,,,,,
+!--------------------------
+! GEOMETRY
+!-----------------
+LS = A/(N+1)
+K,1,0,0,0
+K,2,A/8,0,0
+K,3,7*A/8,0,0
+K,4,A,0,0
+K,5,A/8,B/8,0
+K,6,7*A/8,B/8,0
+K,7,A/8,7*B/8,0
+K,8,7*A/8,7*B/8,0
+K,9,0,B,0
+K,10,A/8,B,0
+K,11,7*A/8,B,0
+K,12,A,B,0
+!-----------------
+K,13,LS,0,0
+K,14,LS,B,0
+K,15,LS,B,-HW
+K,16,LS,0,-HW
+K,17,LS-AF/2,0,-HW
+K,18,LS-AF/2,B,-HW
+K,19,LS+AF/2,B,-HW
+K,20,LS+AF/2,0,-HW
+A,5,6,8,7
+A,1,2,10,9
+A,3,4,12,11
+A,2,3,6,5
+A,7,8,11,10
+A,13,14,15,16
+A,17,18,19,20
+!----------------------------------
+! SELECT STIFFENER TO COPY N TIMES
+!----------------------------------
+ASEL,S,LOC,Z,-HW-1E-3,-1E-3
+AGEN,N,ALL,,,LS,0,0,,1,
+ALLSEL,ALL
+!-----------------------
+AOVLAP,ALL
+!-----------------------
+!-----------------------
+! ASSIGN SECTIONS
+!-----------------------
+ASEL,S,LOC,Z,0,0
+AATT,1,,1,0,1
+ASEL,S,LOC,Z,-HW+1E-3,-1E-3
+AATT,1,,1,0,2
+ASEL,S,LOC,Z,-HW-1E-3,-HW+1E-3
+AATT,1,,1,0,3
+ALLSEL,ALL
+!------------------------
+! MESH
+!------------------------
+AESIZE,ALL,HW/3
+AMESH,ALL
+!------------------------
+! BOUNDARY CONDITIONS
+!------------------------
+NSEL,S,LOC,X,0,0
+D,ALL,ALL,0
+NSEL,S,LOC,X,A,A
+D,ALL,ALL,0
+NSEL,S,LOC,Y,0,0
+D,ALL,ALL,0
+NSEL,S,LOC,Y,B,B
+D,ALL,ALL,0
+ALLSEL,ALL
+ASEL,S,LOC,Z,-1E-3,1E-3
+ASEL,R,LOC,X,A/8,7*A/8
+ASEL,R,LOC,Y,B/8,7*B/8
+SFA,ALL,2,PRES,q
+ALLSEL,ALL
+FINISH  
+/SOL
+ANTYPE,0
+SOLVE
+FINISH
+/POST1
+SET,FIRST
+NSORT,U,Z,0,1
+*GET,MAX_UZ,SORT,0,MAX
+NSORT,S,EQV,0,1
+*GET,MAX_VM,SORT,0,MAX
+*GET,BLOAD,ACTIVE,0,SET,TIME
+ETABLE,,VOLU,,
+SSUM
+*GET,VOL,SSUM,0,ITEM,VOLU
